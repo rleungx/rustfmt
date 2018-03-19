@@ -60,7 +60,7 @@ fn compare_use_trees(a: &ast::UseTree, b: &ast::UseTree, nested: bool) -> Orderi
     }
 
     match (&a.kind, &b.kind) {
-        (&Simple(ident_a), &Simple(ident_b)) => {
+        (&Simple(_), &Simple(_)) => {
             let name_a = &*path_to_imported_ident(&a.prefix).name.as_str();
             let name_b = &*path_to_imported_ident(&b.prefix).name.as_str();
             let name_ordering = if name_a == "self" {
@@ -75,9 +75,9 @@ fn compare_use_trees(a: &ast::UseTree, b: &ast::UseTree, nested: bool) -> Orderi
                 name_a.cmp(name_b)
             };
             if name_ordering == Ordering::Equal {
-                if ident_a.name.as_str() != name_a {
-                    if ident_b.name.as_str() != name_b {
-                        ident_a.name.as_str().cmp(&ident_b.name.as_str())
+                if a.ident().name.as_str() != name_a {
+                    if b.ident().name.as_str() != name_b {
+                        a.ident().name.as_str().cmp(&b.ident().name.as_str())
                     } else {
                         Ordering::Greater
                     }

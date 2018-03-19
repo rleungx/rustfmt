@@ -58,10 +58,16 @@ impl Rewrite for ast::UseTree {
                 }
             }
             ast::UseTreeKind::Simple(ident) => {
-                let ident_str = ident.to_string();
+                if ident.is_none() {
+                    let path_str = rewrite_prefix(&self.prefix, context, shape)
+                        .unwrap_or_else(|| context.snippet(self.prefix.span).to_owned());
 
+                    return Some(path_str);
+                }
+
+                let ident_str = ident.unwrap().to_string();
                 // 4 = " as ".len()
-                let is_same_name_bind = path_to_imported_ident(&self.prefix) == ident;
+                let is_same_name_bind = path_to_imported_ident(&self.prefix) == ident.unwrap();
                 let prefix_shape = if is_same_name_bind {
                     shape
                 } else {
@@ -180,10 +186,14 @@ fn rewrite_nested_use_tree_single(
                 format!("{}::{}", path_str, item_str)
             };
 
-            Some(if ident == rename {
+            if rename.is_none() {
+                return Some(path_item_str);
+            }
+
+            Some(if ident == rename.unwrap() {
                 path_item_str
             } else {
-                format!("{} as {}", path_item_str, rename)
+                format!("{} as {}", path_item_str, rename.unwrap())
             })
         }
         ast::UseTreeKind::Glob | ast::UseTreeKind::Nested(..) => {
